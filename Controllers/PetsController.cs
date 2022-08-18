@@ -15,39 +15,95 @@ namespace pet_hotel.Controllers
     public class PetsController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        public PetsController(ApplicationContext context) {
+        public PetsController(ApplicationContext context)
+        {
             _context = context;
         }
 
         // This is just a stub for GET / to prevent any weird frontend errors that 
         // occur when the route is missing in this controller
         [HttpGet]
-        public IEnumerable<Pet> GetPets() {
-            return new List<Pet>();
+        public IEnumerable<Pet> GetPets()
+        {
+            //Include joins table together to grab petOwner id  
+            return _context.Pets.Include(pet => pet.petOwner);
+
         }
 
-        // [HttpGet]
-        // [Route("test")]
-        // public IEnumerable<Pet> GetPets() {
-        //     PetOwner blaine = new PetOwner{
-        //         name = "Blaine"
-        //     };
+        //GET selected pet
+        [HttpGet("{id}")]
+        public ActionResult<Pet> GetById(int id)
+        {
+            Pet pet = _context.Pets
+                .SingleOrDefault(pet => pet.id == id);
 
-        //     Pet newPet1 = new Pet {
-        //         name = "Big Dog",
-        //         petOwner = blaine,
-        //         color = PetColorType.Black,
-        //         breed = PetBreedType.Poodle,
-        //     };
+            // Return a `404 Not Found` if the baker doesn't exist
+            if (pet is null)
+            {
+                return NotFound();
+            }
 
-        //     Pet newPet2 = new Pet {
-        //         name = "Little Dog",
-        //         petOwner = blaine,
-        //         color = PetColorType.Golden,
-        //         breed = PetBreedType.Labrador,
-        //     };
+            return pet;
+        }
 
-        //     return new List<Pet>{ newPet1, newPet2};
-        // }
+        //post pet
+        [HttpPost]
+        public Pet Post(Pet pet)
+        {
+            _context.Add(pet);
+            _context.SaveChanges();
+            return pet;
+        }
+
+        //update pet
+        [HttpPut("{id}")]
+
+        public Pet Put(int id, Pet pet)
+        {
+            pet.id = id;
+            _context.Update(pet);
+            _context.SaveChanges();
+            return pet;
+        }
+
+        //update check-in
+        [HttpPut("/api/pets/{id}/checkin")]
+
+        public IActionResult CheckIn(int id)
+        {
+            Pet petToUpdate = _context.Pets.Find(id);
+            if (petToUpdate == null) return NotFound();
+            petToUpdate.checkedIn();
+            _context.Update(petToUpdate);
+            _context.SaveChanges();
+            return Ok(petToUpdate);
+        }
+
+        //update check-out
+        [HttpPut("/api/pets/{id}/checkout")]
+
+        public IActionResult CheckOut(int id)
+        {
+            Pet petToUpdate = _context.Pets.Find(id);
+            if (petToUpdate == null) return NotFound();
+            petToUpdate.checkedIn();
+            _context.Update(petToUpdate);
+            _context.SaveChanges();
+            return Ok(petToUpdate);
+        }
+
+        [HttpDelete("{id}")]
+        public void Delete(int id)
+        {
+            // Find the bread, by ID
+            Pet pet = _context.Pets.Find(id);
+
+            // Tell the DB that we want to remove this bread
+            _context.Pets.Remove(pet);
+
+            // ...and save the changes to the database
+            _context.SaveChanges();
+        }
+
     }
 }

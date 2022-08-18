@@ -13,6 +13,7 @@ namespace pet_hotel
         public string name { get; set; }
         [Required]
         public string emailAddress { get; set; }
+
         // [NotMapped] need to do other things first
         public int petCount { get; set; }
 
