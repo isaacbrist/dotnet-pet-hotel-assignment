@@ -48,11 +48,20 @@ namespace pet_hotel.Controllers
 
         //post pet
         [HttpPost]
-        public Pet Post(Pet pet)
+        public IActionResult Post([FromBody] Pet pet)
         {
+            PetOwner owner = _context.PetOwners
+            .SingleOrDefault(owner => owner.id == pet.petOwnerId);
+
+            if(owner == null)
+            {
+                ModelState.AddModelError("petOwnerId", "Invalid Pet Owner ID");
+                return ValidationProblem(ModelState);
+            }
+
             _context.Add(pet);
             _context.SaveChanges();
-            return pet;
+            return CreatedAtAction(nameof(GetPets), pet);
         }
 
         //update pet
